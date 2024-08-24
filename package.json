@@ -1,0 +1,20 @@
+{
+    "name": "nodejs-app",
+    "version": "1.0.0",
+    "description": "A Node.js app with Commander CLI and Winston logging",
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js",
+      "start:custom": "node index.js -i /Users/tomcranstoun/Documents/GitHub/allaboutV2/blocks"
+    },
+    "dependencies": {
+      "commander": "^10.0.0",
+      "winston": "^3.8.2"
+    },
+    "devDependencies": {
+      "eslint": "^8.30.0",
+      "eslint-config-airbnb-base": "^15.0.0",
+      "eslint-plugin-import": "^2.26.0"
+    },
+    "type": "module"
+  }
