@@ -35,7 +35,7 @@ node script.js [options]
 ### Example
 
 ```bash
-node script.js -i ./src -o ./output -f processed_files.txt -l debug
+node index.js -i /Users/tomcranstoun/Documents/GitHub/allaboutV2 -o ./output -f processed_files.txt -l debug
 ```
 
 This command will process all .js and .css files in the './src' directory and its subdirectories, write the results to './output/processed_files.txt', and set the logging level to 'debug'.
