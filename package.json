@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
       "start": "node index.js",
-      "start:custom": "node index.js -i /Users/tomcranstoun/Documents/GitHub/allaboutV2/blocks"
+      "start:custom": "node index.js -i ../allaboutV2/blocks"
     },
     "dependencies": {
       "commander": "^10.0.0",
