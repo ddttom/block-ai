@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import fs from 'fs';
 import path from 'path';
 import logger from './logger.js';
+import { rm } from 'fs/promises';
 
 const program = new Command();
 
@@ -27,7 +28,8 @@ const processFiles = async (dir, outputDir, outputFile, isStylesFolder = false) 
     const fullPath = path.join(dir, file.name);
     if (file.isDirectory()) {
       await processFiles(fullPath, outputDir, outputFile, isStylesFolder);
-    } else if (file.name.endsWith('.js') || file.name.endsWith('.css') || file.name.endsWith('.md')) {
+    } else if ((file.name.endsWith('.js') || file.name.endsWith('.css') || file.name.endsWith('.md')) && 
+               (dir.includes('blocks') || dir.includes('scripts'))) {
       const content = await fs.promises.readFile(fullPath, 'utf-8');
       const blockName = path.basename(file.name, path.extname(file.name));
       let fileType;
@@ -38,12 +40,7 @@ const processFiles = async (dir, outputDir, outputFile, isStylesFolder = false) 
       } else {
         fileType = 'Markdown';
       }
-      let message;
-      if (isStylesFolder) {
-        message = `This is a ${fileType} file that contains the overarching styles. Full path: ${fullPath}`;
-      } else {
-        message = `This is the ${fileType} file that generates a fraction of the block named ${blockName}. Full path: ${fullPath}`;
-      }
+      const message = createMessage(fileType, blockName, fullPath, isStylesFolder);
       logger.info(message);
       await fs.promises.appendFile(path.join(outputDir, outputFile), `${message}\n${content}\n`);
     }
@@ -52,6 +49,28 @@ const processFiles = async (dir, outputDir, outputFile, isStylesFolder = false) 
 
 const main = async () => {
   try {
+    // Remove logs folder and output folder if they exist
+    const logsDir = './logs';
+    await rm(logsDir, { recursive: true, force: true });
+    await rm(options.output, { recursive: true, force: true });
+
+    // Function to abbreviate path with '~' for user's home folder
+    const abbreviatePath = (path) => {
+      const homeDir = process.env.HOME || process.env.USERPROFILE;
+      return path.startsWith(homeDir) ? path.replace(homeDir, '~') : path;
+    };
+
+    // Update the message creation in processFiles function
+    const createMessage = (fileType, blockName, fullPath, isStylesFolder) => {
+      const abbreviatedPath = abbreviatePath(fullPath);
+      if (isStylesFolder) {
+        return `This is a ${fileType} file that contains the overarching styles. path: ${abbreviatedPath}`;
+      } else {
+        return `This is the ${fileType} file that generates a fraction of the block named ${blockName}. Full path: ${abbreviatedPath}`;
+      }
+    };
+
+    // Recreate output directory
     await fs.promises.mkdir(options.output, { recursive: true });
 
     let inputDir = options.input;
@@ -72,5 +91,6 @@ const main = async () => {
     logger.error(error.message);
   }
 };
+
 
 main();
