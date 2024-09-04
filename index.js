@@ -45,7 +45,7 @@ const processFiles = async (dir, outputDir, outputFile, isStylesFolder = false) 
       await processFiles(fullPath, outputDir, outputFile, isStylesFolder);
     } else if ((file.name.endsWith('.js') || file.name.endsWith('.css') || file.name.endsWith('.md')) && 
                (dir.includes('blocks') || dir.includes('scripts'))) {
-      const content = await fs.promises.readFile(fullPath, 'utf-8');
+      let content = await fs.promises.readFile(fullPath, 'utf-8');
       const blockName = path.basename(file.name, path.extname(file.name));
       let fileType;
       if (file.name.endsWith('.js')) {
