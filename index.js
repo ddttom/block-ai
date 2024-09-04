@@ -22,6 +22,21 @@ if (!options.input) {
   program.help();
 }
 
+// Move these functions outside of main
+const abbreviatePath = (path) => {
+  const homeDir = process.env.HOME || process.env.USERPROFILE;
+  return path.startsWith(homeDir) ? path.replace(homeDir, '~') : path;
+};
+
+const createMessage = (fileType, blockName, fullPath, isStylesFolder) => {
+  const abbreviatedPath = abbreviatePath(fullPath);
+  if (isStylesFolder) {
+    return `## This is a ${fileType} file that contains the overarching styles: path: ${abbreviatedPath}\n`;
+  } else {
+    return `## This is the ${fileType} file that generates a fraction of the block named ${blockName}: path: ${abbreviatedPath}\n`;
+  }
+};
+
 const processFiles = async (dir, outputDir, outputFile, isStylesFolder = false) => {
   const files = await fs.promises.readdir(dir, { withFileTypes: true });
   for (const file of files) {
@@ -35,8 +50,10 @@ const processFiles = async (dir, outputDir, outputFile, isStylesFolder = false) 
       let fileType;
       if (file.name.endsWith('.js')) {
         fileType = 'JS';
+        content = `\`\`\`javascript\n${content}\n\`\`\``;
       } else if (file.name.endsWith('.css')) {
         fileType = 'CSS';
+        content = `\`\`\`css\n${content}\n\`\`\``;
       } else {
         fileType = 'Markdown';
       }
@@ -53,22 +70,6 @@ const main = async () => {
     const logsDir = './logs';
     await rm(logsDir, { recursive: true, force: true });
     await rm(options.output, { recursive: true, force: true });
-
-    // Function to abbreviate path with '~' for user's home folder
-    const abbreviatePath = (path) => {
-      const homeDir = process.env.HOME || process.env.USERPROFILE;
-      return path.startsWith(homeDir) ? path.replace(homeDir, '~') : path;
-    };
-
-    // Update the message creation in processFiles function
-    const createMessage = (fileType, blockName, fullPath, isStylesFolder) => {
-      const abbreviatedPath = abbreviatePath(fullPath);
-      if (isStylesFolder) {
-        return `This is a ${fileType} file that contains the overarching styles. path: ${abbreviatedPath}`;
-      } else {
-        return `This is the ${fileType} file that generates a fraction of the block named ${blockName}. Full path: ${abbreviatedPath}`;
-      }
-    };
 
     // Recreate output directory
     await fs.promises.mkdir(options.output, { recursive: true });
@@ -92,5 +93,7 @@ const main = async () => {
   }
 };
 
-
-main();
+main().catch(error => {
+  logger.error('An error occurred during execution:', error);
+  process.exit(1);
+});
