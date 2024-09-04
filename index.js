@@ -31,9 +31,9 @@ const abbreviatePath = (path) => {
 const createMessage = (fileType, blockName, fullPath, isStylesFolder) => {
   const abbreviatedPath = abbreviatePath(fullPath);
   if (isStylesFolder) {
-    return `## This is a ${fileType} file that contains the overarching styles: path: ${abbreviatedPath}\n`;
+    return `## The following  a ${fileType} text that contains the overarching styles, extracted from path: ${abbreviatedPath}\n`;
   } else {
-    return `## This is the ${fileType} file that generates a fraction of the block named ${blockName}: path: ${abbreviatedPath}\n`;
+    return `## The following is the ${fileType} text that generates a fraction of the block named ${blockName}, extracted from path: ${abbreviatedPath}\n`;
   }
 };
 
@@ -56,6 +56,7 @@ const processFiles = async (dir, outputDir, outputFile, isStylesFolder = false) 
         content = `\`\`\`css\n${content}\n\`\`\``;
       } else {
         fileType = 'Markdown';
+        content = `markdown file begins\n${content}\n markdown file ends\n`;
       }
       const message = createMessage(fileType, blockName, fullPath, isStylesFolder);
       logger.info(message);
