@@ -80,12 +80,16 @@ const main = async () => {
       inputDir = path.dirname(inputDir);
       const blocksDir = path.join(inputDir, 'blocks');
       const stylesDir = path.join(inputDir, 'styles');
+      const scriptsDir = path.join(inputDir, 'scripts');
 
       // Process blocks
       await processFiles(blocksDir, options.output, options.file, false);
 
       // Process styles
       await processFiles(stylesDir, options.output, options.file, true);
+
+      // Process scripts
+      await processFiles(scriptsDir, options.output, options.file, false);
     } else {
       await processFiles(inputDir, options.output, options.file);
     }
