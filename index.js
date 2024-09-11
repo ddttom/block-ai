@@ -32,6 +32,8 @@ const createMessage = (fileType, blockName, fullPath, isStylesFolder) => {
   const abbreviatedPath = abbreviatePath(fullPath);
   if (isStylesFolder) {
     return `## The following  a ${fileType} text that contains the overarching styles, extracted from path: ${abbreviatedPath}\n`;
+  } else if (fullPath.includes('/scripts/')) {
+    return `## The following is the ${fileType} text that is a core file named ${blockName}, extracted from path: ${abbreviatedPath}\n`;
   } else {
     return `## The following is the ${fileType} text that generates a fraction of the block named ${blockName}, extracted from path: ${abbreviatedPath}\n`;
   }
