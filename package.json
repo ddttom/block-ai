@@ -6,11 +6,12 @@
     "scripts": {
       "start": "node index.js",
       "start:custom": "node index.js -i /Users/tomcranstoun/Desktop/Franklin/Private/allaboutV2FranklinAI",
-      "start:custom2": "node index.js -i /Users/tomcranstoun/Documents/GitHub/masters/aem-guides-wknd"
+      "start:custom2": "node index.js -i /Users/tomcranstoun/Documents/GitHub/masters/aem-guides-wknd  -o ./output -f out.txt -l debug"
     },
     "dependencies": {
       "commander": "^10.0.0",
-      "winston": "^3.8.2"
+      "winston": "^3.8.2",
+      "ignore": "^5.2.0"
     },
     "devDependencies": {
       "eslint": "^8.30.0",
