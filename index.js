@@ -50,8 +50,8 @@ const processFiles = async (dir, outputDir, outputFile, rootDir) => {
   // Initialize ignore instance
   const ig = ignore();
   
-  // Explicitly ignore .git and .github folders
-  ig.add(['.git', '.github', 'node_modules','all','it.tests','ui.content','ui.content.sample']);
+  // Explicitly ignore .git, .github folders, and package-lock.json
+  ig.add(['.git', '.github', 'node_modules', 'all', 'it.tests', 'ui.content', 'ui.content.sample','dispatcher', 'package-lock.json']);
   
   // Read .gitignore if it exists in the root directory
   const gitignorePath = path.join(rootDir, '.gitignore');
@@ -68,8 +68,8 @@ const processFiles = async (dir, outputDir, outputFile, rootDir) => {
     const fullPath = path.resolve(dir, file.name);
     const relativePath = path.relative(rootDir, fullPath);
     
-    // Skip ignored files/directories
-    if (ig.ignores(relativePath)) {
+    // Skip ignored files/directories and any path containing 'node_modules'
+    if (ig.ignores(relativePath) || fullPath.includes('node_modules')) {
       logger.debug(`Ignored file/directory: ${fullPath}`);
       continue;
     }
