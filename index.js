@@ -33,14 +33,25 @@ const createMessage = (fileType, blockName, fullPath) => {
       return `## The following is the ${fileType} text that generates a fraction of the code named ${blockName}, extracted from path: ${abbreviatedPath}\n`;
 };
 
+const isBinaryFile = (buffer) => {
+  // Check the first 1024 bytes for null bytes
+  const chunkSize = Math.min(1024, buffer.length);
+  for (let i = 0; i < chunkSize; i++) {
+    if (buffer[i] === 0) {
+      return true;
+    }
+  }
+  return false;
+};
+
 const processFiles = async (dir, outputDir, outputFile, rootDir) => {
   logger.debug(`Processing directory: ${dir}`);
   
   // Initialize ignore instance
   const ig = ignore();
   
-  // Explicitly ignore .git folder
-  ig.add('.git');
+  // Explicitly ignore .git and .github folders
+  ig.add(['.git', '.github']);
   
   // Read .gitignore if it exists in the root directory
   const gitignorePath = path.join(rootDir, '.gitignore');
@@ -74,11 +85,20 @@ const processFiles = async (dir, outputDir, outputFile, rootDir) => {
       const fileType = extension ? extension.toUpperCase() : 'UNKNOWN';
       
       try {
-        // Attempt to read the file as UTF-8 text
-        content = await fs.promises.readFile(fullPath, 'utf-8');
+        // Read file as buffer
+        const buffer = await fs.promises.readFile(fullPath);
+        
+        // Check if the file is binary
+        if (isBinaryFile(buffer)) {
+          logger.warn(`Skipping binary file: ${fullPath}`);
+          continue;
+        }
+        
+        // If not binary, convert buffer to UTF-8 string
+        content = buffer.toString('utf-8');
       } catch (readError) {
-        logger.warn(`Failed to read file as UTF-8 text: ${fullPath}. Skipping.`);
-        continue; // Skip files that cannot be read as text (e.g., binary files)
+        logger.warn(`Failed to read file: ${fullPath}. Error: ${readError.message}. Skipping.`);
+        continue;
       }
 
       const blockName = path.basename(file.name, path.extname(file.name));
