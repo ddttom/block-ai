@@ -5,7 +5,8 @@
     "main": "index.js",
     "scripts": {
       "start": "node index.js",
-      "start:custom": "node index.js -i /Users/tomcranstoun/Desktop/Franklin/Private/allaboutV2FranklinAI"
+      "start:custom": "node index.js -i /Users/tomcranstoun/Desktop/Franklin/Private/allaboutV2FranklinAI",
+      "start:custom2": "node index.js -i /Users/tomcranstoun/Documents/GitHub/masters/aem-guides-wknd"
     },
     "dependencies": {
       "commander": "^10.0.0",

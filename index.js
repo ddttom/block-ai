@@ -45,7 +45,7 @@ const processFiles = async (dir, outputDir, outputFile, isStylesFolder = false) 
     const fullPath = path.join(dir, file.name);
     if (file.isDirectory()) {
       await processFiles(fullPath, outputDir, outputFile, isStylesFolder);
-    } else if ((file.name.endsWith('.js') || file.name.endsWith('.css') || file.name.endsWith('.md')) && 
+    } else if ((file.name.endsWith('.js') || file.name.endsWith('.css') || file.name.endsWith('.md') || file.name.endsWith('.java')) && 
                (dir.includes('blocks') || dir.includes('scripts'))) {
       let content = await fs.promises.readFile(fullPath, 'utf-8');
       const blockName = path.basename(file.name, path.extname(file.name));
@@ -56,9 +56,12 @@ const processFiles = async (dir, outputDir, outputFile, isStylesFolder = false) 
       } else if (file.name.endsWith('.css')) {
         fileType = 'CSS';
         content = `\`\`\`css\n${content}\n\`\`\``;
-      } else {
+      } else if (file.name.endsWith('.md')) {
         fileType = 'Markdown';
         content = `markdown file begins\n${content}\n markdown file ends\n`;
+      } else if (file.name.endsWith('.java')) { // Added handling for Java files
+        fileType = 'Java';
+        content = `\`\`\`java\n${content}\n\`\`\``;
       }
       const message = createMessage(fileType, blockName, fullPath, isStylesFolder);
       logger.info(message);
@@ -82,7 +85,9 @@ const main = async () => {
       inputDir = path.dirname(inputDir);
       const blocksDir = path.join(inputDir, 'blocks');
       const stylesDir = path.join(inputDir, 'styles');
-      const scriptsDir = path.join(inputDir, 'scripts');
+      const coreDir = path.join(inputDir, 'core');
+      const uiappsDir = path.join(inputDir, 'ui.apps');
+      const uifrontendDir = path.join(inputDir, 'ui.frontend');
 
       // Process blocks
       await processFiles(blocksDir, options.output, options.file, false);
@@ -92,6 +97,15 @@ const main = async () => {
 
       // Process scripts
       await processFiles(scriptsDir, options.output, options.file, false);
+
+      // Process core
+      await processFiles(coreDir, options.output, options.file, false);
+
+      // Process ui.apps
+      await processFiles(uiappsDir, options.output, options.file, false);
+
+      // Process ui.frontend
+      await processFiles(uifrontendDir, options.output, options.file, false);
     } else {
       await processFiles(inputDir, options.output, options.file);
     }
