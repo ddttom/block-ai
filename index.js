@@ -23,7 +23,6 @@ if (!options.input) {
   program.help();
 }
 
-// Move these functions outside of main
 const abbreviatePath = (path) => {
   const homeDir = process.env.HOME || process.env.USERPROFILE;
   return path.startsWith(homeDir) ? path.replace(homeDir, '~') : path;
@@ -31,21 +30,20 @@ const abbreviatePath = (path) => {
 
 const createMessage = (fileType, blockName, fullPath) => {
   const abbreviatedPath = abbreviatePath(fullPath);
-  if (fullPath.includes('/scripts/')) {
-    return `## The following is the ${fileType} text that is a core file named ${blockName}, extracted from path: ${abbreviatedPath}\n`;
-  } else {
-    return `## The following is the ${fileType} text that generates a fraction of the block named ${blockName}, extracted from path: ${abbreviatedPath}\n`;
-  }
+      return `## The following is the ${fileType} text that generates a fraction of the code named ${blockName}, extracted from path: ${abbreviatedPath}\n`;
 };
 
-const processFiles = async (dir, outputDir, outputFile) => {
+const processFiles = async (dir, outputDir, outputFile, rootDir) => {
   logger.debug(`Processing directory: ${dir}`);
   
   // Initialize ignore instance
   const ig = ignore();
   
+  // Explicitly ignore .git folder
+  ig.add('.git');
+  
   // Read .gitignore if it exists in the root directory
-  const gitignorePath = path.join(process.cwd(), '.gitignore');
+  const gitignorePath = path.join(rootDir, '.gitignore');
   if (fs.existsSync(gitignorePath)) {
     const gitignoreContent = await fs.promises.readFile(gitignorePath, 'utf-8');
     ig.add(gitignoreContent);
@@ -56,8 +54,8 @@ const processFiles = async (dir, outputDir, outputFile) => {
   logger.debug(`Found ${files.length} files/directories in ${dir}`);
   
   for (const file of files) {
-    const fullPath = path.join(dir, file.name);
-    const relativePath = path.relative(process.cwd(), fullPath);
+    const fullPath = path.resolve(dir, file.name);
+    const relativePath = path.relative(rootDir, fullPath);
     
     // Skip ignored files/directories
     if (ig.ignores(relativePath)) {
@@ -67,7 +65,7 @@ const processFiles = async (dir, outputDir, outputFile) => {
 
     if (file.isDirectory()) {
       logger.debug(`Entering directory: ${fullPath}`);
-      await processFiles(fullPath, outputDir, outputFile);
+      await processFiles(fullPath, outputDir, outputFile, rootDir);
     } else {
       logger.debug(`Processing file: ${fullPath}`);
       
@@ -137,19 +135,19 @@ const main = async () => {
     logger.debug(`Creating output directory: ${options.output}`);
     await fs.promises.mkdir(options.output, { recursive: true });
 
-    let inputDir = options.input;
-    logger.debug(`Initial input directory: ${inputDir}`);
+    const inputDir = path.resolve(options.input);
+    logger.debug(`Input directory (resolved): ${inputDir}`);
 
-    if (inputDir.endsWith('blocks')) {
-      inputDir = path.dirname(inputDir);
-      logger.debug(`Updated input directory: ${inputDir}`);
+    if (path.basename(inputDir) === 'blocks') {
+      const projectRoot = path.dirname(inputDir);
+      logger.debug(`Project root directory: ${projectRoot}`);
 
-      const blocksDir = path.join(inputDir, 'blocks');
-      const stylesDir = path.join(inputDir, 'styles');
-      const coreDir = path.join(inputDir, 'core');
-      const uiappsDir = path.join(inputDir, 'ui.apps');
-      const uifrontendDir = path.join(inputDir, 'ui.frontend');
-      const scriptsDir = path.join(inputDir, 'scripts');
+      const blocksDir = path.join(projectRoot, 'blocks');
+      const stylesDir = path.join(projectRoot, 'styles');
+      const coreDir = path.join(projectRoot, 'core');
+      const uiappsDir = path.join(projectRoot, 'ui.apps');
+      const uifrontendDir = path.join(projectRoot, 'ui.frontend');
+      const scriptsDir = path.join(projectRoot, 'scripts');
 
       logger.debug(`Blocks Directory: ${blocksDir}`);
       logger.debug(`Styles Directory: ${stylesDir}`);
@@ -160,30 +158,30 @@ const main = async () => {
 
       // Process blocks
       logger.info('Processing blocks directory');
-      await processFiles(blocksDir, options.output, options.file);
+      await processFiles(blocksDir, options.output, options.file, projectRoot);
 
       // Process styles
       logger.info('Processing styles directory');
-      await processFiles(stylesDir, options.output, options.file);
+      await processFiles(stylesDir, options.output, options.file, projectRoot);
 
       // Process scripts
       logger.info('Processing scripts directory');
-      await processFiles(scriptsDir, options.output, options.file);
+      await processFiles(scriptsDir, options.output, options.file, projectRoot);
 
       // Process core
       logger.info('Processing core directory');
-      await processFiles(coreDir, options.output, options.file);
+      await processFiles(coreDir, options.output, options.file, projectRoot);
 
       // Process ui.apps
       logger.info('Processing ui.apps directory');
-      await processFiles(uiappsDir, options.output, options.file);
+      await processFiles(uiappsDir, options.output, options.file, projectRoot);
 
       // Process ui.frontend
       logger.info('Processing ui.frontend directory');
-      await processFiles(uifrontendDir, options.output, options.file);
+      await processFiles(uifrontendDir, options.output, options.file, projectRoot);
     } else {
       logger.info(`Processing input directory: ${inputDir}`);
-      await processFiles(inputDir, options.output, options.file);
+      await processFiles(inputDir, options.output, options.file, inputDir);
     }
 
     logger.info('Main function completed successfully');
