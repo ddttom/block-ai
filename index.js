@@ -51,7 +51,7 @@ const processFiles = async (dir, outputDir, outputFile, rootDir) => {
   const ig = ignore();
   
   // Explicitly ignore .git and .github folders
-  ig.add(['.git', '.github']);
+  ig.add(['.git', '.github', 'node_modules','all','it.tests','ui.content','ui.content.sample']);
   
   // Read .gitignore if it exists in the root directory
   const gitignorePath = path.join(rootDir, '.gitignore');
@@ -80,8 +80,15 @@ const processFiles = async (dir, outputDir, outputFile, rootDir) => {
     } else {
       logger.debug(`Processing file: ${fullPath}`);
       
-      let content;
       const extension = path.extname(file.name).substring(1);
+      
+      // Skip processing .md files
+      if (extension.toLowerCase() === 'md') {
+        logger.debug(`Skipping .md file: ${fullPath}`);
+        continue;
+      }
+      
+      let content;
       const fileType = extension ? extension.toUpperCase() : 'UNKNOWN';
       
       try {
@@ -110,9 +117,6 @@ const processFiles = async (dir, outputDir, outputFile, rootDir) => {
           break;
         case 'css':
           content = `\`\`\`css\n${content}\n\`\`\``;
-          break;
-        case 'md':
-          content = `markdown file begins\n${content}\n markdown file ends\n`;
           break;
         case 'java':
           content = `\`\`\`java\n${content}\n\`\`\``;
