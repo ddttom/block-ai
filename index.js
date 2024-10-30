@@ -52,6 +52,8 @@ const processFiles = async (dir, outputDir, outputFile, rootDir) => {
   
   // Explicitly ignore .git, .github folders, and package-lock.json
   ig.add(['.git', '.github', 'node_modules', 'all', 'it.tests', 'ui.content', 'ui.content.sample','dispatcher', 'package-lock.json']);
+  // Skip /ui.frontend/package-lock.json
+  ig.add('ui.frontend/package-lock.json');
   
   // Read .gitignore if it exists in the root directory
   const gitignorePath = path.join(rootDir, '.gitignore');
